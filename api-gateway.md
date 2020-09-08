@@ -1,11 +1,11 @@
 # api-gateway
 
-- Set up an API endpoint to route the data from website to `uploadWorkingPaper` lambda function. Endpoint is to be provided under `sodalabs.io/assets/js/wps.js`.
-- Create new endpoint `\upload`
+- Set up an API endpoint to route the data from the website to `uploadWorkingPaper` lambda function. The endpoint is should be provided to `sodalabs.io/assets/js/wps.js`.
+- Create a new endpoint: `/upload`
 - Select Method: `POST`
 - Make sure to enable `CORS`
 - Select `POST` and under `Integration Request`:
-    - Select `Lambda Function` as `Integration Type`  
+    - Select `Lambda Function` as the `Integration Type`  
     - Configure the following in `Mapping template`:
         - Content-Type: `application/json`
         - Template:
