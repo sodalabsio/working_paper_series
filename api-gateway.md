@@ -1,6 +1,6 @@
 # api-gateway
 
-- Set up an API endpoint to route the data from the website to `uploadWorkingPaper` lambda function. The endpoint is should be provided to `sodalabs.io/assets/js/wps.js`.
+- Set up an API endpoint to route the data from the website to `uploadWorkingPaper` lambda function. The endpoint should be provided to `sodalabs.io/assets/js/wps.js`.
 - Create a new endpoint: `/upload`
 - Select Method: `POST`
 - Make sure to enable `CORS`
