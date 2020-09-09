@@ -116,7 +116,8 @@ def postprocess(file, file_path, config, **kwargs):
     title = kwargs.get('title')
     authors = kwargs.get('author')
     wpn = kwargs.get('wpn')
-    link = 'https://{}.s3-ap-southeast-2.amazonaws.com/{}'.format(TARGET_BUCKET, file_path)
+    # the link should point to http://soda-wps.s3-website-ap-southeast-2.amazonaws.com/RePEc/ajr/
+    link = 'http://{}.s3-website-ap-southeast-2.amazonaws.com/{}'.format(TARGET_BUCKET, file_path)
     ref = authors  + ' (' + wpn.split('-')[0] + '), ' +  'SoDa Laboratories Working Paper Series No. ' + wpn + ', Monash Business School, available at ' + link
     pub_online = kwargs.get('pub_online') # get date/parse to dd mon yyy
     
@@ -158,7 +159,7 @@ def create_rdf(link, handle, **kwargs):
     # add authors
     authors = authors.split(",")
     for i, author in enumerate(authors):
-      temp += "Author-Name: " + author + "\n"
+      temp += "Author-Name: " + author.strip() + "\n"
       if i == 0: # only first authors email 
         temp += "Author-Email: " + email + "\n"
       temp += "Author-Workplace-Name: " + workplace_name + "\n"
@@ -180,7 +181,7 @@ def create_rdf(link, handle, **kwargs):
     # add keywords
     temp += "Keywords: " + keywords + "\n"
     # add handle
-    temp += "Handle :" + handle + ":" + wpn + "\n"
+    temp += "Handle: " + handle + ":" + wpn + "\n"
     return temp
 
 def lambda_handler(event, context):

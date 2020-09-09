@@ -9,5 +9,10 @@ Repository for the SoDa Working paper series.
 - `wkhtmltopdf`: AWS Lambda layer for binaries required by the `PyPDF2` package. `PyPDF2` is used by `uploadWorkingPaper` for HTML to PDF conversion.
 - `api-gateway.md`: Documentation for configuring an AWS API Gateway endpoint
 
+## Stack
+- AWS Lambda, S3 and API Gateway
+- JQuery
+- Python
+
 ## References
 - [RePEc step-by-step tutorial](https://ideas.repec.org/stepbystep.html)

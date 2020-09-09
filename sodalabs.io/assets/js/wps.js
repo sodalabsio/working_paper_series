@@ -1,11 +1,13 @@
 $(document).ready(function() {
     const formatNumber = n => ("0" + n).slice(-2);
-    const url = "https://sodalabs.io.s3-ap-southeast-2.amazonaws.com/metadata.json";
+    const base_url = "http://sodalabs.io.s3-ap-southeast-2.amazonaws.com/metadata.json";
     let wpn = ""
     const date = new Date();
     $.ajax({
       type: "GET",
-      url: url,
+      // XDomainRequest protocol must be the same scheme as the calling page
+      url: base_url, // ('https:' == document.location.protocol ? 'https://' : 'http://') +
+      dataType: "json",
       success: function(data) {
         // console.log(data)
         // check if JSON file is stringified
@@ -26,6 +28,10 @@ $(document).ready(function() {
       },
       error: function(error) {
         console.log(`Error ${error}`)
+        $('.modal-body').prepend(`<p><strong>Oops!</strong></p><p>An error has occurred. Please try again later.</p>`)
+        $("#spinner").remove();
+        $('button').prop('disabled', false);
+        $('#messageModal').modal('show');
       }
       });
       // Add the following code if you want the name of the file appear on select
@@ -66,23 +72,22 @@ $(document).ready(function() {
       });
 
       $("#confirmSubmission").click(function(e) {
-
          // Fetch all the forms we want to apply custom Bootstrap validation styles to
-         var form = document.getElementById('wpForm');
-         // var forms = document.getElementsByClassName('needs-validation');
-             // Loop over them and prevent submission
-             // var validation = Array.prototype.filter.call(forms, function(form) {
-           // form.addEventListener('submit', function(event) {
-                 if (form.checkValidity() === false) {
-                   event.preventDefault();
-                   event.stopPropagation();
-                   form.classList.add('was-validated');
-                 }
-                 else{
-                    $('#confirmModal').modal('show');
-                 }
-
+        var form = document.getElementById('wpForm');
+        if (form.checkValidity() === false) {
+          event.preventDefault();
+          event.stopPropagation();
+          form.classList.add('was-validated');
+        }
+        else{
+          $('#confirmModal').modal('show');
+        }
     });
+
+    $("#closeBtn").click(function(e) {
+      $('form').get(0).reset();
+      window.location.reload();
+    }); 
 
       $("#submitPaper").click(function(e) {
         // e.preventDefault();
@@ -105,6 +110,7 @@ $(document).ready(function() {
                   console.log('Processing ..')
                   let base64;
                   let author = [];
+                  // var form = document.getElementById('wpForm');
                   var reader = new FileReader(),
                   file = $('#inputFile')[0];
                   $('.dynamic-wrap input').each(function(index){ author.push($(this).val()) });
@@ -123,10 +129,12 @@ $(document).ready(function() {
                         pub_online:  date.getDate() + ' ' + date.toLocaleString('default', { month: 'long' }) + ' ' + date.getFullYear(),
                         file: base64
                     }
-                console.log(data)
-                $('#messageModal').on('hide', function() {
-                    window.location.reload();
-                });
+                // console.log(data)
+                // $('#messageModal').on('hide', function() {
+                //     $('form').get(0).reset();
+                //     document.getElementById('wpForm').reset();
+                //     window.location.reload();
+                // });
                 // return;
                 $.ajax({
                     url: "https://5v0dil8zg2.execute-api.ap-southeast-2.amazonaws.com/v1/upload",
@@ -137,14 +145,13 @@ $(document).ready(function() {
                     processData: true,
                     data: data,
                     success: function (response) {
-                        console.log(response)      
+                      console.log(response)      
                       //   msg = `<div class="alert alert-success alert-dismissible fade show" role="alert">
                       //   <strong>Done!</strong> Your paper has been successfully submitted. Here's the link below: <a href="${response.body.url}">${response.body.url}</a>
                       //   <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                       //     <span aria-hidden="true">&times;</span>
                       //   </button>
                       // </div>`
-
                       $('.modal-body').prepend(`<p><strong>Done!</strong></p><p>Your paper has been successfully submitted. Here's the link below:</p><p><a href="${response.body.url}">${response.body.url}</a></p>`)
                         $("#spinner").remove();
                         $('button').prop('disabled', false);
@@ -155,13 +162,13 @@ $(document).ready(function() {
                     },
                     error: function(){
                         console.log("error!") 
-                        msg = `<div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <strong>:(</strong> An error has occurred. Please try again later.
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                          <span aria-hidden="true">&times;</span>
-                        </button>
-                      </div>`
-                        $('#msg').html(msg);
+                      //   msg = `<div class="alert alert-danger alert-dismissible fade show" role="alert">
+                      //   <strong>:(</strong> An error has occurred. Please try again later.
+                      //   <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      //     <span aria-hidden="true">&times;</span>
+                      //   </button>
+                      // </div>`
+                      //   $('#msg').html(msg);
                         $('.modal-body').prepend(`<p><strong>Oops!</strong></p><p>There's been an error.</p>`)
                         $("#spinner").remove();
                         $('button').prop('disabled', false);

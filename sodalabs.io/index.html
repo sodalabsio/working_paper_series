@@ -36,7 +36,7 @@
         <!-- Modal Header -->
         <div class="modal-header">
           <h4 class="modal-title">Message</h4>
-          <button type="button" class="close" data-dismiss="modal" onClick="window.location.reload()">&times;</button>
+          <!-- <button type="button" class="close" data-dismiss="modal">&times;</button> -->
         </div>
         
         <!-- Modal body -->
@@ -46,7 +46,7 @@
         
         <!-- Modal footer -->
         <div class="modal-footer">
-          <button type="button" class="btn btn-primary" data-dismiss="modal" onClick="window.location.reload()">Close</button>
+          <button id="closeBtn" type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
         </div>
         
       </div>
@@ -79,7 +79,61 @@
     </div>
   </div>
 
+
+      <!-- <h2 class="text-center mt-5">SoDa Working Paper Series</h2>
+      <img class="mb-4" src="assets/soda-logo.jpeg" alt="" width="120" height="120"> -->
+
+<!-- Just an image -->
+<!-- <nav class="navbar navbar-light bg-light">
+  <a class="navbar-brand" href="#">
+    <img src="assets/img/soda-logo.jpeg" width="100" height="100" alt="">
+    SoDa Working Paper Series
+  </a>
+</nav> -->
+
+
+
+
 <div class="card" style="top: 10px;">
+    <!-- <div class="card-header"> -->
+<!-- 
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="#">
+                <span></span>
+              </a>
+              <ul class="navbar-nav">
+                <li class="nav-item">
+                  <a class="nav-link" href="#">Help</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="#">About</a>
+                </li>
+              </ul>
+    
+          </nav>  -->
+
+         
+
+      <!-- <ul class="nav nav-pills card-header-pills">
+        <li class="nav-item">
+
+<nav class="navbar navbar-light bg-light">
+    <a class="navbar-brand" href="#">
+      <img src="assets/img/soda-logo.jpeg" width="30" height="30" class="d-inline-block align-top" alt="">
+      SoDa Working Paper Series
+    </a>
+  </nav>
+        </li>
+  
+        <li class="nav-item">
+          <a class="nav-link" href="#">Help</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">About</a>
+        </li>
+      </ul> -->
+    <!-- </div> -->
+
 
     <div class="card-body">
      
@@ -91,6 +145,16 @@
         </h3>
 
         <hr></hr>
+<!-- 
+      <div class="row">
+        <div class="col-md-2">
+            <img src="assets/img/soda-logo.jpeg" alt="logo" width="80" height="80"/>
+        </div>
+        <div class="col-md-10">
+            <h3>SoDa Working Paper Series</h3>
+        </div>
+    </div> -->
+<!-- <br></br> -->
       
       <div id="msg"></div>
       <p>Please fill the form below and submit your working paper for it to be automatically processed and added to SoDa public archive. Note that all fields are mandatory.</p>
@@ -113,10 +177,26 @@
           <strong style="color: red;">* </strong>
           <label for="email">Email address</label>
           <input type="email" class="form-control" id="email" required>
-          <small class="form-text text-muted">We'll never share your email with anyone else.</small>
+          <small class="form-text text-muted">Please provide the first author's email address.</small>
           <div class="valid-feedback">Looks good!</div>
           <!-- <div class="invalid-feedback">Please provide a proper email address.</div> -->
         </div>
+        <!-- <div class="form-group">
+          <label class="col-sm-2 control-label" for="field1">ini label teks</label>
+          <div class="col-sm-10">
+            <div class="dynamic-wrap">
+                <div class="entry input-group">
+                  <input class="form-control" name="fields[]" type="text" placeholder="Type something" />
+                  <span class="input-group-btn">
+                    <button class="btn btn-success btn-add" type="button">
+                            <span class="glyphicon glyphicon-plus"></span>
+                    </button>
+                  </span>
+                </div>
+              <br>
+            </div>
+          </div>
+        </div> -->
         <div class="form-group">
           <strong style="color: red;">* </strong>
           <label for="author">Author(s)</label>
@@ -137,6 +217,13 @@
         <small class="form-text text-muted">Please click on + to add more authors. Names should follow: Firstname Middlename initial (if any) Lastname.</small>
         
         </div>
+        <!-- <div class="form-group">
+          <label for="author">Author(s)</label>
+          <input type="text" class="form-control" id="author" placeholder="Jane Doe, John R Smith, Robert M Jackson, .." pattern="^([A-Z][a-z]+[\s][A-Z]?[\s]?[A-Z][a-z]+)$" required>
+          <small class="form-text text-muted">Please enter the author names in the format displayed above.</small>
+          <div class="valid-feedback">Looks good!</div>
+          <div class="invalid-feedback">Please fill author names as Jane Doe, John R Smith, Robert M Jackson, ..</div>
+        </div> -->
         <div class="form-group">
           <strong style="color: red;">* </strong>
           <label for="abstract">Abstract</label>
@@ -151,10 +238,10 @@
             <a href="https://www.aeaweb.org/econlit/jelCodes.php?view=jel">
             <i class="fa fa-question-circle" data-toggle="tooltip" data-placement="right" title="Click here for reference"></i>
             </a>
-          <input type="text" class="form-control" id="jel" pattern="^[A-Z][1-9][0-9]$" required>
-          <small class="form-text text-muted">Enter a relevant JEL code.</small>
+          <input type="text" class="form-control" id="jel" pattern="^([A-Z][1-9][0-9][,]?[ ]?)+$" required>
+          <small class="form-text text-muted">Enter the relevant JEL codes in a comma seperated manner.</small>
           <div class="valid-feedback">Looks good!</div>
-          <div class="invalid-feedback">Please enter a valid JEL code for your paper.</div>
+          <div class="invalid-feedback">Please enter valid JEL codes for your paper.</div>
         </div>
         <div class="form-group">
           <strong style="color: red;">* </strong>
