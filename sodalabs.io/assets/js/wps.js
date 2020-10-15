@@ -3,6 +3,7 @@ $(document).ready(function() {
     const base_url = "http://sodalabs.io.s3-ap-southeast-2.amazonaws.com/metadata.json";
     let wpn = ""
     const date = new Date();
+    const maxAllowedSize = 5 * 1024 * 1024; // 5 MB
     $.ajax({
       type: "GET",
       // XDomainRequest protocol must be the same scheme as the calling page
@@ -28,10 +29,11 @@ $(document).ready(function() {
       },
       error: function(error) {
         console.log(`Error ${error}`)
-        $('.modal-body').prepend(`<p><strong>Oops!</strong></p><p>An error has occurred. Please try again later.</p>`)
+        $("#errorModal .modal-body").html("");
+        $('#errorModal .modal-body').prepend(`<p><strong>Oops!</strong></p><p>An error has occurred. Please try again later.</p>`)
         $("#spinner").remove();
         $('button').prop('disabled', false);
-        $('#messageModal').modal('show');
+        $('#errorModal').modal('show');
       }
       });
       // Add the following code if you want the name of the file appear on select
@@ -80,7 +82,20 @@ $(document).ready(function() {
           form.classList.add('was-validated');
         }
         else{
-          $('#confirmModal').modal('show');
+
+          fileSize = $('#inputFile')[0].files[0].size
+          if (fileSize > maxAllowedSize){
+            $("#errorModal .modal-body").html("");
+            $('#errorModal .modal-body').prepend(`<p><strong>File too large.</strong></p><p>Please upload a PDF file which is less than 5 MB in size.</p>`)
+            $("#spinner").remove();
+            $('button').prop('disabled', false);
+            // $(document).scrollTop($(document).height()); 
+            // $('#msg').html(msg);
+            $('#errorModal').modal('show');
+          }
+          else{
+            $('#confirmModal').modal('show');
+          }
         }
     });
 
@@ -88,6 +103,15 @@ $(document).ready(function() {
       $('form').get(0).reset();
       window.location.reload();
     }); 
+
+    // $('#inputFile').on('change', function() {
+    //   let fileSize = $(this)[0].files[0].size
+    //   if (fileSize > maxAllowedSize){
+    //     console.log(fileSize)
+        
+        
+    //   };
+    // });
 
       $("#submitPaper").click(function(e) {
         // e.preventDefault();
@@ -152,7 +176,8 @@ $(document).ready(function() {
                       //     <span aria-hidden="true">&times;</span>
                       //   </button>
                       // </div>`
-                      $('.modal-body').prepend(`<p><strong>Done!</strong></p><p>Your paper has been successfully submitted. Here's the link below:</p><p><a href="${response.body.url}">${response.body.url}</a></p>`)
+                      $("#messageModal .modal-body").html("");
+                      $('#messageModal .modal-body').prepend(`<p><strong>Done!</strong></p><p>Your paper has been successfully submitted. Here's the link below:</p><p><a href="${response.body.url}">${response.body.url}</a></p>`)
                         $("#spinner").remove();
                         $('button').prop('disabled', false);
                         // $(document).scrollTop($(document).height()); 
@@ -169,12 +194,13 @@ $(document).ready(function() {
                       //   </button>
                       // </div>`
                       //   $('#msg').html(msg);
-                        $('.modal-body').prepend(`<p><strong>Oops!</strong></p><p>There's been an error.</p>`)
+                        $("#errorModal .modal-body").html("");
+                        $('#errorModal .modal-body').prepend(`<p><strong>Oops!</strong></p><p>There's been an error.</p>`)
                         $("#spinner").remove();
                         $('button').prop('disabled', false);
                         // $(document).scrollTop($(document).height()); 
                         // $('#msg').html(msg);
-                        $('#messageModal').modal('show');
+                        $('#errorModal').modal('show');
                     }
                 });
                   };
