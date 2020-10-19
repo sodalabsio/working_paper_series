@@ -213,7 +213,6 @@ def lambda_handler(event, context):
     
     meta = read_from_bucket(SOURCE_BUCKET, META_PATH, True)
     dir_list_file = read_from_bucket(TARGET_BUCKET, DIR_LIST_PATH, False)
-    print(dir_list_file)
     path = meta['handle'].replace(':', '/') + '/' + wpn
     file_path = path + '.pdf'
     rdf_path = path + '.rdf'
@@ -234,13 +233,13 @@ def lambda_handler(event, context):
     dir_list_file = update_dir(dir_list_file, wpn)
     try:
         # upload processed PDF
-        s3.put_object(Bucket=TARGET_BUCKET, Key=file_path, Body=output)
+        s3.put_object(Bucket=TARGET_BUCKET, Key=file_path, Body=output, ContentType='application/pdf')
         # upload RDF file
         s3.put_object(Bucket=TARGET_BUCKET, Key=rdf_path, Body=rdf)
         # upload the index.html file
-        s3.put_object(Bucket=TARGET_BUCKET, Key=DIR_LIST_PATH, Body=dir_list_file)
+        s3.put_object(Bucket=TARGET_BUCKET, Key=DIR_LIST_PATH, Body=dir_list_file, ContentType='text/html')
         # update metadata.json
-        s3.put_object(Body=json.dumps(meta), Bucket=SOURCE_BUCKET, Key=META_PATH)
+        s3.put_object(Bucket=SOURCE_BUCKET, Key=META_PATH, Body=json.dumps(meta), ContentType='application/json')
         
     except Exception as e:
         raise IOError(e)
