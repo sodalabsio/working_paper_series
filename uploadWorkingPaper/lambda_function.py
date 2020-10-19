@@ -11,10 +11,10 @@ from PyPDF2 import PdfFileMerger, PdfFileReader
 SOURCE_BUCKET = 'sodalabs.io'
 TARGET_BUCKET = 'soda-wps'
 META_PATH = 'metadata.json'
+DIR_LIST_PATH = 'RePEc/ajr/sodwps/index.html'
 TEMPLATE_PATH = 'assets/img/wp_cover_static.png'
 
 HTML = """
-        
         <!DOCTYPE html>
         <html>
           <head>
@@ -100,10 +100,21 @@ s3 = boto3.client('s3', verify=False)
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-def read_from_bucket(bucket, key):
+def read_from_bucket(bucket, key, is_json=True):
     """Read file from S3"""
     obj = s3.get_object(Bucket=bucket, Key=key)
-    return json.loads(obj['Body'].read().decode('utf-8'))
+    data = obj['Body'].read().decode('utf-8')
+    if is_json:
+      data = json.loads(data)
+    return data
+
+def update_dir(file, wpn):
+    """Updates the HTML dir file (index.html)"""
+    temp = '<br><a href="{}">{}</a>'
+    html_comps = [element for element in file.split("\n") if element.strip() != ""]
+    for comp in ['.pdf', '.rdf']:
+        html_comps.insert(-1, temp.format(wpn + comp, wpn + comp))
+    return "\n".join(html_comps)
 
 def postprocess(file, file_path, config, **kwargs):
     """Method to postprocess HTML and merge with PDF"""
@@ -200,7 +211,9 @@ def lambda_handler(event, context):
     config = pdfkit.configuration(wkhtmltopdf='/opt/bin/wkhtmltopdf')
     logger.info('binaries found..')
     
-    meta = read_from_bucket(SOURCE_BUCKET, META_PATH)
+    meta = read_from_bucket(SOURCE_BUCKET, META_PATH, True)
+    dir_list_file = read_from_bucket(TARGET_BUCKET, DIR_LIST_PATH, False)
+    print(dir_list_file)
     path = meta['handle'].replace(':', '/') + '/' + wpn
     file_path = path + '.pdf'
     rdf_path = path + '.rdf'
@@ -218,11 +231,14 @@ def lambda_handler(event, context):
     meta['papers'].append(metadata)
     output, link = postprocess(file, file_path, config, **metadata)
     rdf = create_rdf(link, meta['handle'], **metadata) # create RDF
+    dir_list_file = update_dir(dir_list_file, wpn)
     try:
         # upload processed PDF
         s3.put_object(Bucket=TARGET_BUCKET, Key=file_path, Body=output)
         # upload RDF file
         s3.put_object(Bucket=TARGET_BUCKET, Key=rdf_path, Body=rdf)
+        # upload the index.html file
+        s3.put_object(Bucket=TARGET_BUCKET, Key=DIR_LIST_PATH, Body=dir_list_file)
         # update metadata.json
         s3.put_object(Body=json.dumps(meta), Bucket=SOURCE_BUCKET, Key=META_PATH)
         
