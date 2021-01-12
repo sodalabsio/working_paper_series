@@ -197,61 +197,104 @@ def create_rdf(link, handle, **kwargs):
 
 def lambda_handler(event, context):
     data = event['content']
-    wpn = data['wpn']
-    title = data['title']
-    email = data['email']
-    author = data['author']
-    keyword = data['keyword']
-    jel_code = data['jel_code']
-    abstract = urllib.parse.unquote(data['abstract']) # decodeURI
-    file = data['file']
-    pub_online = data['pub_online']
-    logger.info('data received..')
+    mode = data['mode']
     
-    config = pdfkit.configuration(wkhtmltopdf='/opt/bin/wkhtmltopdf')
-    logger.info('binaries found..')
+    if mode == 'upload':
     
-    meta = read_from_bucket(SOURCE_BUCKET, META_PATH, True)
-    dir_list_file = read_from_bucket(TARGET_BUCKET, DIR_LIST_PATH, False)
-    path = meta['handle'].replace(':', '/') + '/' + wpn
-    file_path = path + '.pdf'
-    rdf_path = path + '.rdf'
+      wpn = data['wpn']
+      title = data['title']
+      email = data['email']
+      author = data['author']
+      keyword = data['keyword']
+      jel_code = data['jel_code']
+      abstract = urllib.parse.unquote(data['abstract']) # decodeURI
+      file = data['file']
+      pub_online = data['pub_online']
+      
+      logger.info('data received..')
+      
+      config = pdfkit.configuration(wkhtmltopdf='/opt/bin/wkhtmltopdf')
+      logger.info('binaries found..')
+      
+      meta = read_from_bucket(SOURCE_BUCKET, META_PATH, True)
+      dir_list_file = read_from_bucket(TARGET_BUCKET, DIR_LIST_PATH, False)
+      path = meta['handle'].replace(':', '/') + '/' + wpn
+      file_path = path + '.pdf'
+      rdf_path = path + '.rdf'
+      
+      metadata = {'wpn' : wpn,
+                  'title': title,
+                  'year': int(wpn.split('-')[0]),
+                  'email': email,
+                  'author': author,
+                  'keyword' : keyword,
+                  'jel_code': jel_code,
+                  'abstract' : abstract,
+                  'pub_online': pub_online
+                  }
+      meta['papers'].append(metadata)
+      output, link = postprocess(file, file_path, config, **metadata)
+      rdf = create_rdf(link, meta['handle'], **metadata) # create RDF
+      dir_list_file = update_dir(dir_list_file, wpn)
+      try:
+          # upload processed PDF
+          s3.put_object(Bucket=TARGET_BUCKET, Key=file_path, Body=output, ContentType='application/pdf')
+          # upload RDF file
+          s3.put_object(Bucket=TARGET_BUCKET, Key=rdf_path, Body=rdf)
+          # upload the index.html file
+          s3.put_object(Bucket=TARGET_BUCKET, Key=DIR_LIST_PATH, Body=dir_list_file, ContentType='text/html')
+          # update metadata.json
+          s3.put_object(Bucket=SOURCE_BUCKET, Key=META_PATH, Body=json.dumps(meta), ContentType='application/json')
+          
+      except Exception as e:
+          raise IOError(e)
+      response = {
+          "statusCode": 200,
+          "headers": {
+          "Access-Control-Allow-Origin" : "*", # Required for CORS support to work
+          "Access-Control-Allow-Credentials" : True # Required for cookies, authorization headers with HTTPS 
+          },
+          "body": {
+              'msg': 'File: {} successfully processed.'.format(wpn),
+              'url' : link
+          }
+      }
     
-    metadata = {'wpn' : wpn,
-                'title': title,
-                'year': int(wpn.split('-')[0]),
-                'email': email,
-                'author': author,
-                'keyword' : keyword,
-                'jel_code': jel_code,
-                'abstract' : abstract,
-                'pub_online': pub_online
-                }
-    meta['papers'].append(metadata)
-    output, link = postprocess(file, file_path, config, **metadata)
-    rdf = create_rdf(link, meta['handle'], **metadata) # create RDF
-    dir_list_file = update_dir(dir_list_file, wpn)
-    try:
-        # upload processed PDF
-        s3.put_object(Bucket=TARGET_BUCKET, Key=file_path, Body=output, ContentType='application/pdf')
-        # upload RDF file
-        s3.put_object(Bucket=TARGET_BUCKET, Key=rdf_path, Body=rdf)
-        # upload the index.html file
-        s3.put_object(Bucket=TARGET_BUCKET, Key=DIR_LIST_PATH, Body=dir_list_file, ContentType='text/html')
-        # update metadata.json
-        s3.put_object(Bucket=SOURCE_BUCKET, Key=META_PATH, Body=json.dumps(meta), ContentType='application/json')
-        
-    except Exception as e:
-        raise IOError(e)
-    response = {
-        "statusCode": 200,
-        "headers": {
-        "Access-Control-Allow-Origin" : "*", # Required for CORS support to work
-        "Access-Control-Allow-Credentials" : True # Required for cookies, authorization headers with HTTPS 
-        },
-        "body": {
-            'msg': 'File: {} successfully processed.'.format(wpn),
-            'url' : link
-        }
-    }
+    elif mode == 'update':
+      
+      wpn = data['wpn']
+      file = data['file']
+      
+      logger.info('data received..')
+      
+      config = pdfkit.configuration(wkhtmltopdf='/opt/bin/wkhtmltopdf')
+      logger.info('binaries found..')
+      
+      meta = read_from_bucket(SOURCE_BUCKET, META_PATH, True)
+      path = meta['handle'].replace(':', '/') + '/' + wpn
+      file_path = path + '.pdf'
+      
+      # fetch the metadata
+      metadata = list(filter(lambda x: (x['wpn'] == wpn), meta['papers']))[0]
+      
+      output, link = postprocess(file, file_path, config, **metadata)
+      
+      try:
+          # upload processed PDF
+          s3.put_object(Bucket=TARGET_BUCKET, Key=file_path, Body=output, ContentType='application/pdf')
+          
+      except Exception as e:
+          raise IOError(e)
+      response = {
+          "statusCode": 200,
+          "headers": {
+          "Access-Control-Allow-Origin" : "*", # Required for CORS support to work
+          "Access-Control-Allow-Credentials" : True # Required for cookies, authorization headers with HTTPS 
+          },
+          "body": {
+              'msg': f'File: {wpn} successfully processed.',
+              'url' : link
+          }
+      }
+      
     return response
