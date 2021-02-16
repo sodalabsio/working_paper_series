@@ -1,42 +1,4 @@
 $(document).ready(function() {
-  // old method --
-    // const formatNumber = n => ("0" + n).slice(-2);
-    // const base_url = "http://sodalabs.io.s3-ap-southeast-2.amazonaws.com/metadata.json";
-    // let wpn = ""
-    // const date = new Date();
-    // const maxAllowedSize = 5 * 1024 * 1024; // 5 MB
-    // $.ajax({
-    //   type: "GET",
-    //   // XDomainRequest protocol must be the same scheme as the calling page
-    //   url: base_url, // ('https:' == document.location.protocol ? 'https://' : 'http://') +
-    //   dataType: "json",
-    //   success: function(data) {
-    //     // console.log(data)
-    //     // check if JSON file is stringified
-    //     if (typeof data == 'string'){
-    //       data = JSON.parse(data)
-    //     }
-    //     // console.log(data)
-    //     currentYear = date.getFullYear();
-    //     if (data.papers.length > 0){
-    //       let currentPapers = data.papers.filter(a=>a.year==currentYear);
-    //       wpn = currentYear + "-" + formatNumber(currentPapers.length+1) // note: only handles 01-99
-    //     } 
-    //     else{
-    //       wpn = currentYear + "-" + "01"
-    //     }
-    //     $("#wpn").attr("placeholder", wpn); // set the placeholder
-    //     $("#wpn").val(wpn)
-    //   },
-    //   error: function(error) {
-    //     console.log(`Error ${error}`)
-    //     $("#errorModal .modal-body").html("");
-    //     $('#errorModal .modal-body').prepend(`<p><strong>Oops!</strong></p><p>An error has occurred. Please try again later.</p>`)
-    //     $("#spinner").remove();
-    //     $('button').prop('disabled', false);
-    //     $('#errorModal').modal('show');
-    //   }
-    //   });
 
     function triggerError(msg){
       $("#errorModal .modal-body").html("");
@@ -49,7 +11,7 @@ $(document).ready(function() {
     const formatNumber = n => ("0" + n).slice(-2);
     let wpn = ""
     const date = new Date();
-    const maxAllowedSize = 5 * 1024 * 1024; // 5 MB
+    const maxAllowedSize = 25 * 1024 * 1024; // max limit of file size
     let currentYear = date.getFullYear(); 
     let currentPapers = 0;
     let prefix = `RePEc/ajr/sodwps/${currentYear}-`;
@@ -94,24 +56,12 @@ $(document).ready(function() {
         $("#wpn").val(wpn)
       }
      });
-
       // Add the following code if you want the name of the file appear on select
       $(".custom-file-input").on("change", function() {
         let fileName = $(this).val().split("\\").pop();
         $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
       });
-      // const isEmail = input => /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/.test(input);
-      // $('#keyword').tagEditor({
-      //     // placeholder: 'Enter tags ...',
-      //     placeholder: "applied economics, policy & governance ..",
-      //     beforeTagSave: (field, editor, tags, tag, val) => {
-      //     // make sure it is a formally valid email
-      //     if (!isEmail(val)) {
-      //       console.log(`"${val}" is not a valid email`);
-      //       return false;
-      //     }
-      //   }
-      // });
+
       $(document).on('click', '.btn-add', function(e) {
         // $("#addAuthor").click(function(e) {
         e.preventDefault();
@@ -144,7 +94,7 @@ $(document).ready(function() {
 
           fileSize = $('#inputFile')[0].files[0].size
           if (fileSize > maxAllowedSize){
-            let msg = `<p><strong>File too large.</strong></p><p>Please upload a PDF file which is less than 5 MB in size.</p>`
+            let msg = `<p><strong>File too large.</strong></p><p>Please upload a PDF file which is less than 25 MB in size.</p>`
             triggerError(msg)
           }
           else{
@@ -165,7 +115,7 @@ $(document).ready(function() {
 
        fileSize = $('#inputUpdateFile')[0].files[0].size
        if (fileSize > maxAllowedSize){
-         let msg = `<p><strong>File too large.</strong></p><p>Please upload a PDF file which is less than 5 MB in size.</p>`
+         let msg = `<p><strong>File too large.</strong></p><p>Please upload a PDF file which is less than 25 MB in size.</p>`
          triggerError(msg)
        }
        else{
@@ -203,7 +153,7 @@ $(document).ready(function() {
                 <li>Authors: <b>${currentPaper[0].author}</b></li>
               </ul> with a new version.</p>
                 <p>Doing so will make the existing version unavailable and only the new version will be available from now.</p>
-                <p>If you wish to continue, write “PROCEED” and in all-caps below and click ENTER, or click Cancel, to go back</p>`
+                <p>If you wish to continue, click CONFIRM, or click Cancel, to go back</p>`
               $('#updateModal .modal-body').prepend(verifyMsg)
               $('#updateModal').modal('show');
             }
@@ -222,30 +172,7 @@ $(document).ready(function() {
       window.location.reload();
     }); 
 
-    // $('#inputFile').on('change', function() {
-    //   let fileSize = $(this)[0].files[0].size
-    //   if (fileSize > maxAllowedSize){
-    //     console.log(fileSize)
-        
-        
-    //   };
-    // });
-
-
       $("#submitPaper").click(function(e) {
-        // e.preventDefault();
-        // Fetch all the forms we want to apply custom Bootstrap validation styles to
-        // var form = document.getElementById('wpForm');
-        // var forms = document.getElementsByClassName('needs-validation');
-            // Loop over them and prevent submission
-            // var validation = Array.prototype.filter.call(forms, function(form) {
-          // form.addEventListener('submit', function(event) {
-                // if (form.checkValidity() === false) {
-                //   event.preventDefault();
-                //   event.stopPropagation();
-                //   form.classList.add('was-validated');
-                // }
-                // else{
 
                   $('#confirmModal').modal('hide');
                   $('button').prop('disabled', true);
@@ -260,64 +187,72 @@ $(document).ready(function() {
                   reader.onload = function () {
                       let result = reader.result;
                       base64 = result.replace(/^[^,]*,/, '')
-                      // all values are string
-                      let data = {
-                        wpn : $('#wpn').val(),
-                        title: $('#title').val(),
-                        email: $('#email').val(),
-                        author: author.join(', '),
-                        keyword: $("#keyword").tagsinput('items').join(', '),
-                        jel_code:  $('#jel').val(),
-                        abstract: encodeURIComponent($('#abstract').val()),
-                        pub_online:  date.getDate() + ' ' + date.toLocaleString('default', { month: 'long' }) + ' ' + date.getFullYear(),
-                        file: base64,
-                        mode: 'upload'
-                    }
-                // console.log(data)
-                // $('#messageModal').on('hide', function() {
-                //     $('form').get(0).reset();
-                //     document.getElementById('wpForm').reset();
-                //     window.location.reload();
-                // });
-                // return;
-                $.ajax({
-                    url: "https://5v0dil8zg2.execute-api.ap-southeast-2.amazonaws.com/v1/upload",
-                    type: "POST",
-                    contentType: 'application/json',
-                    dataType: 'json',
-                    accept: 'application/json',
-                    processData: true,
-                    data: data,
-                    success: function (response) {
-                      console.log(response)      
-                      if ('errorMessage' in response){
-                        let msg = `<p><strong>Oops!</strong></p><p>An error has occurred. Please try again later.</p>`
-                        triggerError(msg)
-                      }
-                      else {
-                        $("#messageModal .modal-body").html("");
-                        $('#messageModal .modal-body').prepend(`<p><strong>Done!</strong></p><p>Your paper has been successfully submitted. Here's the link below:</p><p><a href="${response.body.url}">${response.body.url}</a></p>`)
-                          $("#spinner").remove();
-                          $('button').prop('disabled', false);
-                          // $(document).scrollTop($(document).height()); 
-                          // $('#msg').html(msg);
-                          $('#messageModal').modal('show');
-                          console.log('Done!')
-                      }
-                    },
-                    error: function(){
-                        console.log("error!") 
-                      //   msg = `<div class="alert alert-danger alert-dismissible fade show" role="alert">
-                      //   <strong>:(</strong> An error has occurred. Please try again later.
-                      //   <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                      //     <span aria-hidden="true">&times;</span>
-                      //   </button>
-                      // </div>`
-                      //   $('#msg').html(msg);
-                      let msg = `<p><strong>Oops!</strong></p><p>An error has occurred. Please try again later.</p>`
-                      triggerError(msg)
-                    }
-                });
+                
+                // upload raw PDF file to S3
+                var s3 = new AWS.S3( { params: {Bucket: "soda-wps"} } );
+                //  Inside your router method (ContentType should be set to the content type of the image file):
+                // data:application/pdf;base64,JVBERi0xLjMKJcTl8uXrp/Og0MTGCjQgMCBvYmoKPDwgL0xlbmd0aCA1IDAgUiAvRmlsdGV
+                    // buf = new Buffer.from(base64,'base64')
+                    var data = {
+                      Key: `temp/${wpn}`, 
+                      Body: base64,
+                      ContentEncoding: 'base64',
+                      ContentType: 'application/pdf'
+                    };
+                    s3.putObject(data, function(err, data){
+                        if (err) { 
+                          console.log(err);
+                          console.log('Error uploading data: ', data); 
+                        } else {
+                          console.log('Successfully uploaded the file!');
+
+                        // all values are string
+                          let data = {
+                            wpn : $('#wpn').val(),
+                            title: $('#title').val(),
+                            email: $('#email').val(),
+                            author: author.join(', '),
+                            keyword: $("#keyword").tagsinput('items').join(', '),
+                            jel_code:  $('#jel').val(),
+                            abstract: encodeURIComponent($('#abstract').val()),
+                            pub_online:  date.getDate() + ' ' + date.toLocaleString('default', { month: 'long' }) + ' ' + date.getFullYear(),
+                            // file: base64,
+                            mode: 'upload'
+                        }
+                          
+                          // send paper metadata and trigger Lambda function
+                          $.ajax({
+                            url: "https://5v0dil8zg2.execute-api.ap-southeast-2.amazonaws.com/v1/upload",
+                            type: "POST",
+                            contentType: 'application/json',
+                            dataType: 'json',
+                            accept: 'application/json',
+                            processData: true,
+                            data: data,
+                            success: function (response) {
+                              console.log(response)      
+                              if ('errorMessage' in response){
+                                let msg = `<p><strong>Oops!</strong></p><p>An error has occurred. Please try again later.</p>`
+                                triggerError(msg)
+                              }
+                              else {
+                                $("#messageModal .modal-body").html("");
+                                $('#messageModal .modal-body').prepend(`<p><strong>Done!</strong></p><p>Your paper has been successfully submitted. Here's the link below:</p><p><a href="${response.body.url}">${response.body.url}</a></p>`)
+                                  $("#spinner").remove();
+                                  $('button').prop('disabled', false);
+                                  $('#messageModal').modal('show');
+                                  console.log('Done!')
+                              }
+                            },
+                            error: function(){
+                                console.log("error!") 
+                                let msg = `<p><strong>Oops!</strong></p><p>An error has occurred. Please try again later.</p>`
+                                triggerError(msg)
+                            }
+                        });
+
+                        }
+                    });
                   };
                   reader.readAsDataURL(file.files[0]);
             // }
@@ -341,40 +276,71 @@ $(document).ready(function() {
                           let result = reader.result;
                           base64 = result.replace(/^[^,]*,/, '')
                           // all values are string
+                          let wpn = $('#wpn-update').val()
+                      // upload raw PDF file to S3
+                      var s3 = new AWS.S3( { params: {Bucket: "soda-wps"} } );
+                          var data = {
+                            Key: `temp/${wpn}`, 
+                            Body: base64,
+                            ContentEncoding: 'base64',
+                            ContentType: 'application/pdf'
+                          };
+                          s3.putObject(data, function(err, data){
+                              if (err) { 
+                                console.log(err);
+                                console.log('Error uploading data: ', data); 
+                              } else {
+                                console.log('Successfully uploaded the file!');
+
                           let data = {
-                            wpn : $('#wpn-update').val(),
-                            file: base64,
+                            wpn : wpn,
+                            // file: base64,
                             mode: 'update'
                         }
-                    $.ajax({
-                        url: "https://5v0dil8zg2.execute-api.ap-southeast-2.amazonaws.com/v1/upload",
-                        type: "POST",
-                        contentType: 'application/json',
-                        dataType: 'json',
-                        accept: 'application/json',
-                        processData: true,
-                        data: data,
-                        success: function (response) {
-                            console.log(response)      
-                            if ('errorMessage' in response){
-                              let msg = `<p><strong>Oops!</strong></p><p>An error has occurred. Please try again later.</p>`
-                              triggerError(msg)
-                            }
-                            else{
-                              $("#messageModal .modal-body").html("");
-                              $('#messageModal .modal-body').prepend(`<p><strong>Done!</strong></p><p>Your paper has been successfully updated. Here's the link below:</p><p><a href="${response.body.url}">${response.body.url}</a></p>`)
-                              $("#spinner").remove();
-                              $('button').prop('disabled', false);
-                              $('#messageModal').modal('show');
-                              console.log('Done!')
-                            }
-                        },
-                        error: function(){
-                          let msg = `<p><strong>Oops!</strong></p><p>An error has occurred. Please try again later.</p>`
-                          triggerError(msg)
-                        }
-                    });
+                          $.ajax({
+                              url: "https://5v0dil8zg2.execute-api.ap-southeast-2.amazonaws.com/v1/upload",
+                              type: "POST",
+                              contentType: 'application/json',
+                              dataType: 'json',
+                              accept: 'application/json',
+                              processData: true,
+                              data: data,
+                              success: function (response) {
+                                  console.log(response)      
+                                  if ('errorMessage' in response){
+                                    let msg = `<p><strong>Oops!</strong></p><p>An error has occurred. Please try again later.</p>`
+                                    triggerError(msg)
+                                  }
+                                  else{
+                                    $("#messageModal .modal-body").html("");
+                                    $('#messageModal .modal-body').prepend(`<p><strong>Done!</strong></p><p>Your paper has been successfully updated. Here's the link below:</p><p><a href="${response.body.url}">${response.body.url}</a></p>`)
+                                    $("#spinner").remove();
+                                    $('button').prop('disabled', false);
+                                    $('#messageModal').modal('show');
+                                    console.log('Done!')
+                                  }
+                              },
+                              error: function(){
+                                let msg = `<p><strong>Oops!</strong></p><p>An error has occurred. Please try again later.</p>`
+                                triggerError(msg)
+                              }
+                          });
+
+
+
+
+                              }
+                            
+                            });
+
+
+
+
+
+
                       };
+
+
                       reader.readAsDataURL(file.files[0]);
                 // }
               });

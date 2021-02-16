@@ -13,6 +13,7 @@ TARGET_BUCKET = 'soda-wps'
 META_PATH = 'metadata.json'
 DIR_LIST_PATH = 'RePEc/ajr/sodwps/index.html'
 TEMPLATE_PATH = 'assets/img/wp_cover_static.png'
+TEMP_PATH = 'temp/' 
 
 HTML = """
         <!DOCTYPE html>
@@ -208,7 +209,11 @@ def lambda_handler(event, context):
       keyword = data['keyword']
       jel_code = data['jel_code']
       abstract = urllib.parse.unquote(data['abstract']) # decodeURI
-      file = data['file']
+      
+      # read the temp file from S3
+      file = read_from_bucket(bucket=TARGET_BUCKET, key=TEMP_PATH + wpn, is_json=False)
+      # file = data['file']
+      
       pub_online = data['pub_online']
       
       logger.info('data received..')
@@ -263,7 +268,9 @@ def lambda_handler(event, context):
     elif mode == 'update':
       
       wpn = data['wpn']
-      file = data['file']
+      # file = data['file']
+      # read the temp file from S3
+      file = read_from_bucket(bucket=TARGET_BUCKET, key=TEMP_PATH + wpn, is_json=False)
       
       logger.info('data received..')
       
