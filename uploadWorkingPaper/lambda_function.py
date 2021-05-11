@@ -127,15 +127,30 @@ def postprocess(file, file_path, config, **kwargs):
     
     title = kwargs.get('title')
     authors = kwargs.get('author')
+    authors_inline = ""
+    
+    if len(authors) > 1:
+        
+        authors_inline = ", ".join([a['name'] for a in authors[:-1]]) + f" and {authors[-1]['name']}"
+    else:
+        authors_inline = authors[0]['name']
+    
+    affiliation = ""
+    for i, author in enumerate(authors):
+        affiliation += f"{author['name']}: {author['affiliation']} (email: <a href=\"mailto:{author['email']}\">{author['email']}</a>)"
+        if i != len(authors)-1:
+            affiliation += "; "
+        else:
+            affiliation += "."
     wpn = kwargs.get('wpn')
     # the link should point to http://soda-wps.s3-website-ap-southeast-2.amazonaws.com/RePEc/ajr/
     link = 'http://{}.s3-website-ap-southeast-2.amazonaws.com/{}'.format(TARGET_BUCKET, file_path)
-    ref = authors  + ' (' + wpn.split('-')[0] + '), ' +  'SoDa Laboratories Working Paper Series No. ' + wpn + ', Monash Business School, available at ' + link
+    ref = authors_inline  + ' (' + wpn.split('-')[0] + '), ' +  'SoDa Laboratories Working Paper Series No. ' + wpn + ', Monash Business School, available at ' + link
     pub_online = kwargs.get('pub_online') # get date/parse to dd mon yyy
     
     # add content to html
     # authors = ', '.join(authors)
-    html = HTML.format(b64_img, title, authors, wpn, ref, pub_online)
+    html = HTML.format(b64_img, title, authors_inline, wpn, ref, pub_online)
     # convert html to pdf (bytes)
     # pdf = pdfkit.from_string(html, False) 
     pdf = pdfkit.from_string(html, False, configuration=config)
@@ -156,7 +171,7 @@ def create_rdf(link, handle, **kwargs):
     title = kwargs.get('title')
     abstract = kwargs.get('abstract')
     authors = kwargs.get('author')
-    email = kwargs.get('email')
+    # email = kwargs.get('email')
     wpn = kwargs.get('wpn')
     pub_online = kwargs.get('pub_online')
     jel_code = kwargs.get('jel_code')
@@ -169,12 +184,10 @@ def create_rdf(link, handle, **kwargs):
     workplace_name = "SoDa Laboratories, Monash University"
     temp = "Template-Type: ReDIF-Paper 1.0\n" # template
     # add authors
-    authors = authors.split(",")
-    for i, author in enumerate(authors):
-      temp += "Author-Name: " + author.strip() + "\n"
-      if i == 0: # only first authors email 
-        temp += "Author-Email: " + email + "\n"
-      temp += "Author-Workplace-Name: " + workplace_name + "\n"
+    for author in authors:
+        temp += "Author-Name: " + author['name'].strip() + "\n"
+        temp += "Author-Email: " + author['email'] + "\n"
+        temp += "Author-Workplace-Name: " + author['affiliation'] + "\n"
     
     # add title
     temp += "Title: " + title + "\n"
@@ -204,8 +217,11 @@ def lambda_handler(event, context):
     
       wpn = data['wpn']
       title = data['title']
-      email = data['email']
-      author = data['author']
+      # email = data['email']
+      # author = data['author']
+      author = data['author'].split('|') # | is used as the delimiter
+      author = [dict(name=author[i], affiliation=author[i+1], email=author[i+2]) for
+                        i in range(0, len(author), 3)]
       keyword = data['keyword']
       jel_code = data['jel_code']
       abstract = urllib.parse.unquote(data['abstract']) # decodeURI
@@ -230,7 +246,7 @@ def lambda_handler(event, context):
       metadata = {'wpn' : wpn,
                   'title': title,
                   'year': int(wpn.split('-')[0]),
-                  'email': email,
+                  # 'email': email,
                   'author': author,
                   'keyword' : keyword,
                   'jel_code': jel_code,
@@ -245,11 +261,11 @@ def lambda_handler(event, context):
           # upload processed PDF
           s3.put_object(Bucket=TARGET_BUCKET, Key=file_path, Body=output, ContentType='application/pdf')
           # upload RDF file
-          s3.put_object(Bucket=TARGET_BUCKET, Key=rdf_path, Body=rdf)
+          s3.put_object(Bucket=TARGET_BUCKET, Key=rdf_path, Body=rdf, ContentType='text/plain;charset=utf-8')
           # upload the index.html file
-          s3.put_object(Bucket=TARGET_BUCKET, Key=DIR_LIST_PATH, Body=dir_list_file, ContentType='text/html')
+          s3.put_object(Bucket=TARGET_BUCKET, Key=DIR_LIST_PATH, Body=dir_list_file, ContentType='text/html;charset=utf-8')
           # update metadata.json
-          s3.put_object(Bucket=SOURCE_BUCKET, Key=META_PATH, Body=json.dumps(meta), ContentType='application/json')
+          s3.put_object(Bucket=SOURCE_BUCKET, Key=META_PATH, Body=json.dumps(meta), ContentType='application/json;charset=utf-8')
           
       except Exception as e:
           raise IOError(e)

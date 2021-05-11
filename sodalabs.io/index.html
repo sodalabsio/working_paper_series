@@ -237,18 +237,18 @@
         <div class="form-group">
           <strong style="color: red;">* </strong>
           <label for="title">Title</label>
-          <input id="title" class="form-control" type="text" placeholder="" maxlength="250" pattern="^[a-zA-Z0-9,._:;\(\) -]+$" required>
+          <input id="title" class="form-control" type="text" placeholder="" maxlength="250" pattern="^[a-zA-Z0-9,._:;\(\)\? -]+$" required>
           <small class="form-text text-muted">Please enter the title of your paper.</small>
           <div class="valid-feedback">Looks good!</div>
         </div>
-        <div class="form-group">
+        <!-- <div class="form-group">
           <strong style="color: red;">* </strong>
           <label for="email">Email address</label>
           <input type="email" class="form-control" id="email" required>
           <small class="form-text text-muted">Please provide the first author's email address.</small>
-          <div class="valid-feedback">Looks good!</div>
+          <div class="valid-feedback">Looks good!</div> -->
           <!-- <div class="invalid-feedback">Please provide a proper email address.</div> -->
-        </div>
+        <!-- </div> -->
         <!-- <div class="form-group">
           <label class="col-sm-2 control-label" for="field1">ini label teks</label>
           <div class="col-sm-10">
@@ -270,19 +270,20 @@
           <label for="author">Author(s)</label>
           <div class="dynamic-wrap">
             <div class="entry input-group">
-              <input type="text" class="form-control" name="fields[]" pattern="^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$" required>
-              <!-- ^[A-Z][a-z]+[\s][A-Z]?[\s]?[A-Z][a-z]+$ -->
+              <input type="text" class="form-control" name="fullname" placeholder="Full name" pattern="^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$" required>
+              <input type="text" class="form-control" name="affiliation" placeholder="Affiliation" pattern="^[a-zA-Z0-9,._: -/]+$" required>
+              <input type="email" id="email" class="form-control" name="email" placeholder="Email" required>              <!-- ^[A-Z][a-z]+[\s][A-Z]?[\s]?[A-Z][a-z]+$ -->
               <span class="input-group-btn">
                 <button class="btn btn-primary btn-add" type="button">
                         <span class="fa fa-plus"></span>
                 </button>
               </span>
               <div class="valid-feedback">Looks good!</div>
-              <div class="invalid-feedback">Please fill author names as for e.g. John R Smith or Jane Doe or Robert Jackson etc.</div>
+              <div class="invalid-feedback">Please fill all the relevant fields for each author above.</div>
             </div>
             
         </div>
-        <small class="form-text text-muted">Please click on + to add more authors. Names should follow: Firstname Middlename initial (if any) Lastname.</small>
+        <small class="form-text text-muted">Please click on + to add more authors.</small>
         
         </div>
         <!-- <div class="form-group">
@@ -303,10 +304,10 @@
         <div class="form-group">
           <strong style="color: red;">* </strong>
           <label for="jel">JEL code</label>
-            <a href="https://www.aeaweb.org/econlit/jelCodes.php?view=jel">
+            <a target="_blank" href="https://www.aeaweb.org/econlit/jelCodes.php?view=jel">
             <i class="fa fa-question-circle" data-toggle="tooltip" data-placement="right" title="Click here for reference"></i>
             </a>
-          <input type="text" class="form-control" id="jel" pattern="^([A-Z][1-9][0-9][,]?[ ]?)+$" required>
+          <input type="text" class="form-control" id="jel" pattern="^([A-Z][1-9][0-9]?[,]?[ ]?)+$" required>
           <small class="form-text text-muted">Enter the relevant JEL codes in a comma seperated manner.</small>
           <div class="valid-feedback">Looks good!</div>
           <div class="invalid-feedback">Please enter valid JEL codes for your paper.</div>
@@ -384,7 +385,7 @@
 
     </div>
     <div class="card-footer text-muted text-center">
-        Powered by <a href="https://www.monash.edu/business/soda-labs/home">SoDa labs</a>
+        Powered by <a href="https://www.monash.edu/business/soda-labs/home">Monash SoDa labs</a>
       </div>
   </div>
 

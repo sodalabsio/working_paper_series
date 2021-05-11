@@ -8,6 +8,7 @@ $(document).ready(function() {
       $('#errorModal').modal('show');
     }
 
+    const apiEndpoint = "https://5v0dil8zg2.execute-api.ap-southeast-2.amazonaws.com/v1/upload";
     const formatNumber = n => ("0" + n).slice(-2);
     let wpn = ""
     const date = new Date();
@@ -146,11 +147,15 @@ $(document).ready(function() {
             console.log(currentPaper)
             if (currentPaper.length > 0){
               $("#updateModal .modal-body").html("");
+              let authors = []
+              currentPaper[0].author.forEach(function (a) {
+                authors.push(a.name)
+              });
               let verifyMsg = `<p>You are about to overwrite the following paper: 
               <ul>
                 <li>WPN: <b>${currentPaper[0].wpn}</b></li>
                 <li>Title: <b>${currentPaper[0].title}</b></li>
-                <li>Authors: <b>${currentPaper[0].author}</b></li>
+                <li>Authors: <b>${authors.join(", ")}</b></li>
               </ul> with a new version.</p>
                 <p>Doing so will make the existing version unavailable and only the new version will be available from now.</p>
                 <p>If you wish to continue, click CONFIRM, or click Cancel, to go back</p>`
@@ -210,11 +215,11 @@ $(document).ready(function() {
                           let data = {
                             wpn : $('#wpn').val(),
                             title: $('#title').val(),
-                            email: $('#email').val(),
-                            author: author.join(', '),
+                            // email: $('#email').val(),
+                            author: author.join('|'),
                             keyword: $("#keyword").tagsinput('items').join(', '),
                             jel_code:  $('#jel').val(),
-                            abstract: encodeURIComponent($('#abstract').val()),
+                            abstract: encodeURI($('#abstract').val()),
                             pub_online:  date.getDate() + ' ' + date.toLocaleString('default', { month: 'long' }) + ' ' + date.getFullYear(),
                             // file: base64,
                             mode: 'upload'
@@ -222,9 +227,9 @@ $(document).ready(function() {
                           
                           // send paper metadata and trigger Lambda function
                           $.ajax({
-                            url: "https://5v0dil8zg2.execute-api.ap-southeast-2.amazonaws.com/v1/upload",
+                            url: apiEndpoint,
                             type: "POST",
-                            contentType: 'application/json',
+                            contentType: 'application/json;charset=utf-8',
                             dataType: 'json',
                             accept: 'application/json',
                             processData: true,
@@ -260,71 +265,70 @@ $(document).ready(function() {
 
 
           $("#updatePaper").click(function(e) {
-            
-              $('#updateModal').modal('hide');
-              $('button').prop('disabled', true);
-              $('#confirmUpdate').prepend(`<span id="spinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`);
-              console.log('Processing ..')
+            $('#updateModal').modal('hide');
+            $('button').prop('disabled', true);
+            $('#confirmUpdate').prepend(`<span id="spinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`);
+            console.log('Processing ..')
 
 
-                      let base64;
-                      let author = [];
-                      // var form = document.getElementById('wpForm');
-                      var reader = new FileReader(),
-                      file = $('#inputUpdateFile')[0];
-                      reader.onload = function () {
-                          let result = reader.result;
-                          base64 = result.replace(/^[^,]*,/, '')
-                          // all values are string
-                          let wpn = $('#wpn-update').val()
-                      // upload raw PDF file to S3
-                      var s3 = new AWS.S3( { params: {Bucket: "soda-wps"} } );
-                          var data = {
-                            Key: `temp/${wpn}`, 
-                            Body: base64,
-                            ContentEncoding: 'base64',
-                            ContentType: 'application/pdf'
-                          };
-                          s3.putObject(data, function(err, data){
-                              if (err) { 
-                                console.log(err);
-                                console.log('Error uploading data: ', data); 
-                              } else {
-                                console.log('Successfully uploaded the file!');
+                    let base64;
+                    let author = [];
+                    // var form = document.getElementById('wpForm');
+                    var reader = new FileReader(),
+                    file = $('#inputUpdateFile')[0];
+                    reader.onload = function () {
+                        let result = reader.result;
+                        base64 = result.replace(/^[^,]*,/, '')
+                        // all values are string
+                        let wpn = $('#wpn-update').val()
+                    // upload raw PDF file to S3
+                    var s3 = new AWS.S3( { params: {Bucket: "soda-wps"} } );
+                        var data = {
+                          Key: `temp/${wpn}`, 
+                          Body: base64,
+                          ContentEncoding: 'base64',
+                          ContentType: 'application/pdf'
+                        };
+                        s3.putObject(data, function(err, data){
+                            if (err) { 
+                              console.log(err);
+                              console.log('Error uploading data: ', data); 
+                            } else {
+                              console.log('Successfully uploaded the file!');
 
-                          let data = {
-                            wpn : wpn,
-                            // file: base64,
-                            mode: 'update'
-                        }
-                          $.ajax({
-                              url: "https://5v0dil8zg2.execute-api.ap-southeast-2.amazonaws.com/v1/upload",
-                              type: "POST",
-                              contentType: 'application/json',
-                              dataType: 'json',
-                              accept: 'application/json',
-                              processData: true,
-                              data: data,
-                              success: function (response) {
-                                  console.log(response)      
-                                  if ('errorMessage' in response){
-                                    let msg = `<p><strong>Oops!</strong></p><p>An error has occurred. Please try again later.</p>`
-                                    triggerError(msg)
-                                  }
-                                  else{
-                                    $("#messageModal .modal-body").html("");
-                                    $('#messageModal .modal-body').prepend(`<p><strong>Done!</strong></p><p>Your paper has been successfully updated. Here's the link below:</p><p><a href="${response.body.url}">${response.body.url}</a></p>`)
-                                    $("#spinner").remove();
-                                    $('button').prop('disabled', false);
-                                    $('#messageModal').modal('show');
-                                    console.log('Done!')
-                                  }
-                              },
-                              error: function(){
-                                let msg = `<p><strong>Oops!</strong></p><p>An error has occurred. Please try again later.</p>`
-                                triggerError(msg)
-                              }
-                          });
+                        let data = {
+                          wpn : wpn,
+                          // file: base64,
+                          mode: 'update'
+                      }
+                        $.ajax({
+                            url: apiEndpoint,
+                            type: "POST",
+                            contentType: 'application/json;charset=utf-8',
+                            dataType: 'json',
+                            accept: 'application/json',
+                            processData: true,
+                            data: data,
+                            success: function (response) {
+                                console.log(response)      
+                                if ('errorMessage' in response){
+                                  let msg = `<p><strong>Oops!</strong></p><p>An error has occurred. Please try again later.</p>`
+                                  triggerError(msg)
+                                }
+                                else{
+                                  $("#messageModal .modal-body").html("");
+                                  $('#messageModal .modal-body').prepend(`<p><strong>Done!</strong></p><p>Your paper has been successfully updated. Here's the link below:</p><p><a href="${response.body.url}">${response.body.url}</a></p>`)
+                                  $("#spinner").remove();
+                                  $('button').prop('disabled', false);
+                                  $('#messageModal').modal('show');
+                                  console.log('Done!')
+                                }
+                            },
+                            error: function(){
+                              let msg = `<p><strong>Oops!</strong></p><p>An error has occurred. Please try again later.</p>`
+                              triggerError(msg)
+                            }
+                        });
 
 
 
